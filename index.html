@@ -6,161 +6,155 @@
     <title>Image Upload & Crop</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css">
     <style>
-         body {
-            font-family: Arial, sans-serif;
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 1px;
-            background-color: #f3f2ef;
+        :root {
+            --primary: #0ea5e9;
+            --border: #e5e7eb;
+            --background: #f8fafc;
+            --text: #1e293b;
+            --radius: 12px;
+        }
+
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            margin: 0;
+            padding: 5px;
+            background-color: var(--background);
+            color: var(--text);
+            line-height: 1.5;
         }
 
         .container {
-            display: flex;
-            flex-direction: column;
-            gap: 5px;
-            padding: 20px;
+            max-width: 1200px;
+            margin: 0;
+        }
+
+        .title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+            color: var(--text);
         }
 
         .main-content {
-            display: flex;
-            gap: 20px;
-            align-items: flex-start;
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) 300px;
+            gap: 24px;
             background: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.08);
+            padding: 10px;
+            border-radius: var(--radius);
+            box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1);
+            margin-top: 10px;
             min-height: 600px;
         }
 
-        .editor-section {
-            flex: 2;
-            min-width: 0;
+        .controls {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            padding: 5px;
+            background: white;
+            border-radius: var(--radius);
+            box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1);
         }
 
-        .preview-section {
-            flex: 1;
-            min-width: 300px;
-            position: sticky;
-            top: 20px;
+        .control-group {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .btn {
+            padding: 8px 16px;
+            border: 1px solid var(--border);
+            background: white;
+            color: var(--text);
+            border-radius: 6px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn:hover {
+            background: var(--background);
+        }
+
+        .btn.active {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .primary {
+            background: var(--primary);
+            color: white;
+            border: none;
+        }
+
+        .primary:hover {
+            background: #0284c7;
+        }
+
+        .editor-section {
+            width: 100%;
+            min-width: 0;
+            position: relative;
         }
 
         .image-container {
             width: 100%;
             height: 600px;
             display: none;
-            background-color: #000;
-            border-radius: 8px;
+            background-color: var(--background);
+            border-radius: var(--radius);
             overflow: hidden;
         }
 
         #preview-image {
             max-width: 100%;
-            display: block;
-        }
-
-        .controls-container {
-            display: flex;
-            gap: 20px;
-            align-items: center;
-            margin-bottom: 20px;
-            flex-wrap: wrap;
-        }
-
-        .crop-options {
-            display: flex;
-            gap: 10px;
-        }
-
-        .preset-options {
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-        }
-
-        .preset-button {
-            padding: 8px 16px;
-            background-color: #f3f2ef;
-            color: #333;
-            border: 1px solid #ddd;
-            border-radius: 24px;
-            cursor: pointer;
-            font-weight: 600;
-            font-size: 14px;
-            transition: all 0.2s;
-        }
-
-        .preset-button:hover {
-            background-color: #e1e1e1;
-        }
-
-        .preset-button.active {
-            background-color: #0a66c2;
-            color: white;
-            border-color: #0a66c2;
-        }
-
-        .dimension-inputs {
-            display: flex;
-            gap: 10px;
-            align-items: center;
+            max-height: 100%;
         }
 
         .dimension-input {
             width: 60px;
             padding: 8px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-        }
-
-        button {
-            padding: 8px 16px;
-            background-color: #0a66c2;
-            color: white;
-            border: none;
-            border-radius: 24px;
-            cursor: pointer;
-            font-weight: 600;
+            border: 1px solid var(--border);
+            border-radius: 6px;
             font-size: 14px;
-            transition: background-color 0.2s;
         }
 
-        button:hover {
-            background-color: #004182;
+        .preview-section {
+            background: white;
+            padding: 16px;
+            border-radius: var(--radius);
+            width: 100%;
+            box-sizing: border-box;
         }
 
-        button:disabled {
-            background-color: #cccccc;
-            cursor: not-allowed;
-        }
-
-        .active-crop {
-            background-color: #004182;
-        }
-
-        .error, .success {
-            padding: 8px;
-            border-radius: 4px;
-            margin-top: 8px;
-            display: none;
-        }
-
-        .error {
-            color: #cc1016;
-            background-color: #fef2f2;
-        }
-
-        .success {
-            color: #057642;
-            background-color: #f0fdf4;
+        .preview-label {
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 12px;
+            color: var(--text);
         }
 
         .cropped-preview {
             width: 100%;
             display: none;
-            border: 1px solid #ddd;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
             overflow: hidden;
-            border-radius: 8px;
+            max-height: 300px;
+        }
+
+        .cropped-preview img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
         }
 
         .circle-preview {
@@ -168,20 +162,49 @@
             aspect-ratio: 1;
         }
 
-        #cropped-image {
-            width: 100%;
-            height: 100%;
-            object-fit: contain;
+        .upload-section {
+            margin-top: 16px;
         }
 
-        .preview-label {
-            margin-bottom: 10px;
-            font-weight: 600;
+        .file-input-wrapper {
+            margin-bottom: 16px;
         }
 
+        .file-name-display {
+            font-size: 14px;
+            color: #64748b;
+            margin-left: 8px;
+        }
+
+        .message {
+            padding: 12px;
+            border-radius: 6px;
+            margin-top: 16px;
+            font-size: 14px;
+        }
+
+        .error {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .success {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .crop-info {
+            font-size: 14px;
+            color: #64748b;
+            padding: 12px;
+            background: var(--background);
+            border-radius: 6px;
+            margin-top: 16px;
+        }
+
+        /* Cropper.js customization */
         .cropper-view-box {
-            outline: 2px solid #fff;
-            outline-color: #fff;
+            outline: 2px solid white;
         }
 
         .cropper-face {
@@ -189,76 +212,52 @@
         }
 
         .cropper-modal {
-            background-color: rgba(0, 0, 0, 0.7);
-        }
-
-        .cropper-line, .cropper-point {
-            background-color: #fff;
+            background-color: rgba(0, 0, 0, 0.8);
         }
 
         .circle-crop .cropper-view-box {
             border-radius: 50%;
         }
 
-        .crop-info {
-            font-size: 14px;
-            color: #666;
-            margin-top: 10px;
-            padding: 8px;
-            background-color: #f3f2ef;
-            border-radius: 4px;
-            display: none;
-        }
-
-        .file-input-wrapper {
-            margin-bottom: 20px;
-        }
-
-        .file-name-display {
-            margin-left: 10px;
-            color: #666;
-        }
-
-        .button-container {
-            margin-top: 20px;
-            display: flex;
-            gap: 10px;
+        .cropper-container {
+            max-width: 100% !important;
+            max-height: 600px !important;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>Image Crop</h1>
-        
-        <div class="file-input-wrapper">
-            <input type="file" id="file-input" accept="image/jpeg,image/png">
-            <label for="file-input" class="custom-file-input button">Select photo</label>
-            <span class="file-name-display"></span>
-        </div>
+        <h1 class="title" style="margin: 0px;">Image Cropper</h1>
 
-        <div class="controls-container">
-            <div class="crop-options">
-                <button id="square-crop">Square</button>
-                <button id="circle-crop">Circle</button>
-            </div>
-            
-            <div class="preset-options">
-                <button class="preset-button" data-width="600" data-height="600">600 × 600</button>
-                <button class="preset-button" data-width="1200" data-height="1200">1200 × 1200</button>
-                <button class="preset-button" data-width="1080" data-height="1080">1080 × 1080</button>
-                <button class="preset-button" data-width="1920" data-height="1080">1920 × 1080</button>
+        <div class="controls">
+            <div class="control-group">
+                <input type="file" id="file-input" accept="image/jpeg,image/png" style="display: none">
+                <label for="file-input" class="btn primary">Select Image</label>
+                <span class="file-name-display"></span>
             </div>
 
-            <div class="dimension-inputs">
-                <input type="number" id="width-input" class="dimension-input" placeholder="Width" value="1">
+            <div class="control-group">
+                <button id="square-crop" class="btn">Square</button>
+                <button id="circle-crop" class="btn">Circle</button>
+            </div>
+
+            <div class="control-group">
+                <button class="btn preset-button" data-width="600" data-height="600">600×600</button>
+                <button class="btn preset-button" data-width="1200" data-height="1200">1200×1200</button>
+                <button class="btn preset-button" data-width="1080" data-height="1080">1080×1080</button>
+                <button class="btn preset-button" data-width="1920" data-height="1080">1920×1080</button>
+            </div>
+
+            <div class="control-group">
+                <input type="number" id="width-input" class="dimension-input" value="1" min="1">
                 <span>:</span>
-                <input type="number" id="height-input" class="dimension-input" placeholder="Height" value="1">
-                <button id="apply-dimensions">Apply Ratio</button>
+                <input type="number" id="height-input" class="dimension-input" value="1" min="1">
+                <button id="apply-dimensions" class="btn">Apply</button>
             </div>
         </div>
 
-        <div class="crop-info" id="crop-info">
-            Output resolution: <span id="output-dimensions">600 × 600</span> pixels
+        <div id="crop-info" class="crop-info" style="display: none">
+            Output: <span id="output-dimensions">600×600</span> pixels
         </div>
 
         <div class="main-content">
@@ -273,18 +272,16 @@
                 <div class="cropped-preview" id="cropped-preview">
                     <img id="cropped-image" src="#" alt="Cropped Preview">
                 </div>
+                <div class="upload-section">
+                    <button id="crop-button" class="btn primary" disabled style="width: 100%">Apply Crop</button>
+                    <button id="upload-button" class="btn" disabled style="width: 100%; margin-top: 8px">Save Image</button>
+                </div>
             </div>
         </div>
 
-        <div class="button-container">
-            <button id="crop-button" disabled>Apply</button>
-            <button id="upload-button" disabled>Save</button>
-        </div>
-
-        <p id="error-message" class="error"></p>
-        <p id="success-message" class="success"></p>
+        <div id="error-message" class="message error" style="display: none"></div>
+        <div id="success-message" class="message success" style="display: none"></div>
     </div>
-
     <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
     <script>
         let cropper = null;
@@ -349,13 +346,13 @@
             cropper = new Cropper(previewImage, cropperOptions);
             cropButton.disabled = false;
 
-            // Update crop info display
-            if (width && height) {
-                outputDimensions.textContent = `${width} × ${height}`;
-                cropInfo.style.display = 'block';
-            } else {
-                cropInfo.style.display = 'none';
-            }
+            // // Update crop info display
+            // if (width && height) {
+            //     outputDimensions.textContent = `${width} × ${height}`;
+            //     cropInfo.style.display = 'block';
+            // } else {
+            //     cropInfo.style.display = 'none';
+            // }
         }
 
         // Shape Selection Handlers
