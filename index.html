@@ -6,9 +6,9 @@
     <title>Image Upload & Crop</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css">
     <style>
-        body {
+         body {
             font-family: Arial, sans-serif;
-            max-width: 1000px;
+            max-width: 1200px;
             margin: 0 auto;
             padding: 1px;
             background-color: #f3f2ef;
@@ -29,21 +29,24 @@
             padding: 20px;
             border-radius: 8px;
             box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.08);
+            min-height: 600px;
         }
 
         .editor-section {
-            flex: 1;
+            flex: 2;
+            min-width: 0;
         }
 
         .preview-section {
-            width: 100%;
+            flex: 1;
+            min-width: 300px;
             position: sticky;
             top: 20px;
         }
 
         .image-container {
-            width: 600px;
-            height: 400px;
+            width: 100%;
+            height: 600px;
             display: none;
             background-color: #000;
             border-radius: 8px;
@@ -152,22 +155,28 @@
         }
 
         .cropped-preview {
-            width: 200px;
-            height: 200px;
+            width: 100%;
             display: none;
             border: 1px solid #ddd;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
             overflow: hidden;
+            border-radius: 8px;
         }
 
         .circle-preview {
             border-radius: 50%;
+            aspect-ratio: 1;
         }
 
         #cropped-image {
             width: 100%;
             height: 100%;
-            object-fit: cover;
+            object-fit: contain;
+        }
+
+        .preview-label {
+            margin-bottom: 10px;
+            font-weight: 600;
         }
 
         .cropper-view-box {
