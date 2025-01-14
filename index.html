@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Upload & Crop</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 1px;
+            background-color: #f3f2ef;
+        }
+
+        .container {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            padding: 20px;
+        }
+
+        .main-content {
+            display: flex;
+            gap: 20px;
+            align-items: flex-start;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.08);
+        }
+
+        .editor-section {
+            flex: 1;
+        }
+
+        .preview-section {
+            width: 100%;
+            position: sticky;
+            top: 20px;
+        }
+
+        .image-container {
+            width: 600px;
+            height: 400px;
+            display: none;
+            background-color: #000;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        #preview-image {
+            max-width: 100%;
+            display: block;
+        }
+
+        .controls-container {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .crop-options {
+            display: flex;
+            gap: 10px;
+        }
+
+        .preset-options {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .preset-button {
+            padding: 8px 16px;
+            background-color: #f3f2ef;
+            color: #333;
+            border: 1px solid #ddd;
+            border-radius: 24px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+
+        .preset-button:hover {
+            background-color: #e1e1e1;
+        }
+
+        .preset-button.active {
+            background-color: #0a66c2;
+            color: white;
+            border-color: #0a66c2;
+        }
+
+        .dimension-inputs {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .dimension-input {
+            width: 60px;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+
+        button {
+            padding: 8px 16px;
+            background-color: #0a66c2;
+            color: white;
+            border: none;
+            border-radius: 24px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 14px;
+            transition: background-color 0.2s;
+        }
+
+        button:hover {
+            background-color: #004182;
+        }
+
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+
+        .active-crop {
+            background-color: #004182;
+        }
+
+        .error, .success {
+            padding: 8px;
+            border-radius: 4px;
+            margin-top: 8px;
+            display: none;
+        }
+
+        .error {
+            color: #cc1016;
+            background-color: #fef2f2;
+        }
+
+        .success {
+            color: #057642;
+            background-color: #f0fdf4;
+        }
+
+        .cropped-preview {
+            width: 200px;
+            height: 200px;
+            display: none;
+            border: 1px solid #ddd;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .circle-preview {
+            border-radius: 50%;
+        }
+
+        #cropped-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .cropper-view-box {
+            outline: 2px solid #fff;
+            outline-color: #fff;
+        }
+
+        .cropper-face {
+            background-color: transparent;
+        }
+
+        .cropper-modal {
+            background-color: rgba(0, 0, 0, 0.7);
+        }
+
+        .cropper-line, .cropper-point {
+            background-color: #fff;
+        }
+
+        .circle-crop .cropper-view-box {
+            border-radius: 50%;
+        }
+
+        .crop-info {
+            font-size: 14px;
+            color: #666;
+            margin-top: 10px;
+            padding: 8px;
+            background-color: #f3f2ef;
+            border-radius: 4px;
+            display: none;
+        }
+
+        .file-input-wrapper {
+            margin-bottom: 20px;
+        }
+
+        .file-name-display {
+            margin-left: 10px;
+            color: #666;
+        }
+
+        .button-container {
+            margin-top: 20px;
+            display: flex;
+            gap: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Image Crop</h1>
+        
+        <div class="file-input-wrapper">
+            <input type="file" id="file-input" accept="image/jpeg,image/png">
+            <label for="file-input" class="custom-file-input button">Select photo</label>
+            <span class="file-name-display"></span>
+        </div>
+
+        <div class="controls-container">
+            <div class="crop-options">
+                <button id="square-crop">Square</button>
+                <button id="circle-crop">Circle</button>
+            </div>
+            
+            <div class="preset-options">
+                <button class="preset-button" data-width="600" data-height="600">600 × 600</button>
+                <button class="preset-button" data-width="1200" data-height="1200">1200 × 1200</button>
+                <button class="preset-button" data-width="1080" data-height="1080">1080 × 1080</button>
+                <button class="preset-button" data-width="1920" data-height="1080">1920 × 1080</button>
+            </div>
+
+            <div class="dimension-inputs">
+                <input type="number" id="width-input" class="dimension-input" placeholder="Width" value="1">
+                <span>:</span>
+                <input type="number" id="height-input" class="dimension-input" placeholder="Height" value="1">
+                <button id="apply-dimensions">Apply Ratio</button>
+            </div>
+        </div>
+
+        <div class="crop-info" id="crop-info">
+            Output resolution: <span id="output-dimensions">600 × 600</span> pixels
+        </div>
+
+        <div class="main-content">
+            <div class="editor-section">
+                <div class="image-container" id="image-container">
+                    <img id="preview-image" src="#" alt="Preview">
+                </div>
+            </div>
+
+            <div class="preview-section">
+                <div class="preview-label">Preview</div>
+                <div class="cropped-preview" id="cropped-preview">
+                    <img id="cropped-image" src="#" alt="Cropped Preview">
+                </div>
+            </div>
+        </div>
+
+        <div class="button-container">
+            <button id="crop-button" disabled>Apply</button>
+            <button id="upload-button" disabled>Save</button>
+        </div>
+
+        <p id="error-message" class="error"></p>
+        <p id="success-message" class="success"></p>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
+    <script>
+        let cropper = null;
+        let croppedBlob = null;
+        let isCircle = false;
+
+        // DOM Elements
+        const fileInput = document.getElementById('file-input');
+        const imageContainer = document.getElementById('image-container');
+        const previewImage = document.getElementById('preview-image');
+        const cropButton = document.getElementById('crop-button');
+        const uploadButton = document.getElementById('upload-button');
+        const errorMessage = document.getElementById('error-message');
+        const successMessage = document.getElementById('success-message');
+        const croppedPreview = document.getElementById('cropped-preview');
+        const croppedImage = document.getElementById('cropped-image');
+        const squareCropBtn = document.getElementById('square-crop');
+        const circleCropBtn = document.getElementById('circle-crop');
+        const widthInput = document.getElementById('width-input');
+        const heightInput = document.getElementById('height-input');
+        const applyDimensionsBtn = document.getElementById('apply-dimensions');
+        const presetButtons = document.querySelectorAll('.preset-button');
+        const cropInfo = document.getElementById('crop-info');
+        const outputDimensions = document.getElementById('output-dimensions');
+        let currentPreset = null;
+
+        function initCropper(shape = 'square', width = null, height = null) {
+            if (cropper) {
+                cropper.destroy();
+            }
+
+            isCircle = shape === 'circle';
+            
+            squareCropBtn.classList.toggle('active-crop', !isCircle);
+            circleCropBtn.classList.toggle('active-crop', isCircle);
+
+            imageContainer.classList.toggle('circle-crop', isCircle);
+            croppedPreview.classList.toggle('circle-preview', isCircle);
+
+            // Use preset dimensions if provided, otherwise use input values
+            const aspectWidth = width || parseInt(widthInput.value) || 1;
+            const aspectHeight = height || parseInt(heightInput.value) || 1;
+            
+            const cropperOptions = {
+                aspectRatio: isCircle ? 1 : aspectWidth / aspectHeight,
+                viewMode: 1,
+                responsive: true,
+                background: true,
+                cropBoxResizable: true,
+                cropBoxMovable: true,
+                dragMode: 'move',
+                guides: true,
+                center: true,
+                minContainerWidth: 600,
+                minContainerHeight: 400,
+                minCropBoxWidth: 50,
+                minCropBoxHeight: 50,
+                autoCropArea: 0.8,
+                toggleDragModeOnDblclick: false
+            };
+
+            cropper = new Cropper(previewImage, cropperOptions);
+            cropButton.disabled = false;
+
+            // Update crop info display
+            if (width && height) {
+                outputDimensions.textContent = `${width} × ${height}`;
+                cropInfo.style.display = 'block';
+            } else {
+                cropInfo.style.display = 'none';
+            }
+        }
+
+        // Shape Selection Handlers
+        squareCropBtn.addEventListener('click', () => {
+            presetButtons.forEach(btn => btn.classList.remove('active'));
+            currentPreset = null;
+            initCropper('square');
+        });
+        
+        circleCropBtn.addEventListener('click', () => {
+            presetButtons.forEach(btn => btn.classList.remove('active'));
+            currentPreset = null;
+            initCropper('circle');
+        });
+
+        // Preset button handlers
+        presetButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                const width = parseInt(button.dataset.width);
+                const height = parseInt(button.dataset.height);
+                
+                // Update inputs to match preset
+                widthInput.value = width;
+                heightInput.value = height;
+                
+                // Update active state
+                presetButtons.forEach(btn => btn.classList.remove('active'));
+                button.classList.add('active');
+                
+                currentPreset = { width, height };
+                initCropper('square', width, height);
+            });
+        });
+
+        // Custom Dimensions Handler
+        applyDimensionsBtn.addEventListener('click', () => {
+            presetButtons.forEach(btn => btn.classList.remove('active'));
+            currentPreset = null;
+            if (!isCircle) {
+                initCropper('square');
+            }
+        });
+
+        // File Upload Handler
+        fileInput.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            
+            if (!file) return;
+            
+            if (!file.type.match('image/(jpeg|png)')) {
+                showError('Please select a valid JPEG or PNG image.');
+                return;
+            }
+
+            resetMessages();
+            cropButton.disabled = true;
+            uploadButton.disabled = true;
+            croppedPreview.style.display = 'none';
+
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                previewImage.src = event.target.result;
+                imageContainer.style.display = 'block';
+                initCropper('square');
+            };
+            reader.readAsDataURL(file);
+        });
+
+        // Crop Handler
+        cropButton.addEventListener('click', async function() {
+            if (!cropper) return;
+
+            let targetWidth = currentPreset ? currentPreset.width : undefined;
+            let targetHeight = currentPreset ? currentPreset.height : undefined;
+
+            const canvas = cropper.getCroppedCanvas({
+                width: targetWidth,
+                height: targetHeight,
+                imageSmoothingEnabled: true,
+                imageSmoothingQuality: 'high'
+            });
+
+            croppedImage.src = canvas.toDataURL();
+            canvas.toBlob((blob) => {
+                croppedBlob = blob;
+                uploadButton.disabled = false;
+                showSuccess('Ready to save!');
+            }, 'image/png', 1.0);
+
+            croppedPreview.style.display = 'block';
+        });
+
+        // Upload Handler
+        uploadButton.addEventListener('click', async function() {
+            if (!croppedBlob) return;
+
+            uploadButton.disabled = true;
+            resetMessages();
+
+            const formData = new FormData();
+            formData.append('image', croppedBlob, 'cropped-image.png');
+
+            try {
+                const response = await fetch('https://your-upload-endpoint/api/uploads', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (!response.ok) {
+                    throw new Error('Upload failed');
+                }
+
+                const data = await response.json();
+                showSuccess('Image uploaded successfully!');
+            } catch (error) {
+                showError('Failed to upload image. Please try again.');
+                uploadButton.disabled = false;
+            }
+        });
+
+        // File name display
+        const fileNameDisplay = document.querySelector('.file-name-display');
+        fileInput.addEventListener('change', function(e) {
+            const fileName = e.target.files[0]?.name;
+            fileNameDisplay.textContent = fileName || '';
+        });
+
+        // Utility Functions
+        function showError(message) {
+            errorMessage.textContent = message;
+            errorMessage.style.display = 'block';
+            successMessage.style.display = 'none';
+        }
+
+        function showSuccess(message) {
+            successMessage.textContent = message;
+            successMessage.style.display = 'block';
+            errorMessage.style.display = 'none';
+        }
+
+        function resetMessages() {
+            errorMessage.style.display = 'none';
+            successMessage.style.display = 'none';
+        }
+    </script>
+</body>
+</html>
